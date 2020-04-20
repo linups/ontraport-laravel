@@ -1,0 +1,25 @@
+{
+    "name": "linups/ontraport-laravel",
+    "description": "Laravel to Ontraport integration. Testing only",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Linas",
+            "email": "linas.gutauskas@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "guzzlehttp/guzzle": "^6.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Linups\\OntraportLaravel": "src/"
+        },
+        "classmap": [
+            "database/seeds",
+            "database/factories"
+        ]
+    }
+}

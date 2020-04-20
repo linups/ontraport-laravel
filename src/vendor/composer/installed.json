@@ -1,0 +1,47 @@
+[
+    {
+        "name": "ontraport/sdk-php",
+        "version": "v1.0.3",
+        "version_normalized": "1.0.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Ontraport/SDK-PHP.git",
+            "reference": "37726bb7f343a8988846bd1c04838c5b40b32c4d"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Ontraport/SDK-PHP/zipball/37726bb7f343a8988846bd1c04838c5b40b32c4d",
+            "reference": "37726bb7f343a8988846bd1c04838c5b40b32c4d",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.2"
+        },
+        "time": "2018-01-25 20:06:21",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "OntraportAPI\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "ONTRAPORT",
+                "homepage": "https://github.com/Ontraport"
+            }
+        ],
+        "description": "ONTRAPORT PHP Library",
+        "homepage": "https://api.ontraport.com",
+        "keywords": [
+            "library",
+            "ontraport",
+            "php",
+            "sdk"
+        ]
+    }
+]
