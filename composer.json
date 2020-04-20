@@ -14,11 +14,7 @@
     "autoload": {
         "psr-4": {
             "Linups\\OntraportLaravel\\": "src/"
-        },
-        "classmap": [
-            "database/seeds",
-            "database/factories"
-        ]
+        }
     },
     "extra": {
         "laravel": {
