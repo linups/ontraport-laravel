@@ -58,6 +58,13 @@ class Ontraport extends ABSontraport {
         return $result;        
     }
     
+    public function updateUser($email, $data) {
+        $idArray = ['id' => $this->getCustomerID($email)];
+        $requestParams = array_merge($idArray, $data);
+
+        return $this->client->contact()->update($requestParams);
+    }
+    
     private function trasactionType($type) {
         if ($type == 'sale' || $type == 'charge') {
             return 'one_time';
