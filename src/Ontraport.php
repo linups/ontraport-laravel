@@ -190,8 +190,10 @@ echo("<pre>".print_r($requestParams, true)."</pre>");
         $result = json_decode($this->getContactObj(array('email' => $email))); 
         if (isset($result->code) && $result->code == 0) {
             return $result->data->id;
+        } else {
+            $newContact = $this->addUser(array('email' => $email));
+            return $newContact->data->id;
         }
-        throw new \Exception('Ooops. We couldn\'t process your request.');
     }
     
     private function getContactObj($array) { 
@@ -213,14 +215,14 @@ echo("<pre>".print_r($requestParams, true)."</pre>");
     }
     
     public function addTagByEmail($email, $tags) {
-        $contactID = $this->searchContact($email);
+        $contactID = $this->getCustomerID($email);
         if(is_array($tags)) $tags = implode(',',$tags);
         
         return $this->addTag($tags, $contactID);
     }
     
     public function addSequenceByEmail($email, $seq_ids) {
-        $contactID = $this->searchContact($email);
+        $contactID = $this->getCustomerID($email);
         if(is_array($seq_ids)) $seq_ids = implode(',',$seq_ids);
         
         return $this->addSequence($seq_ids, $contactID);
@@ -236,20 +238,8 @@ echo("<pre>".print_r($requestParams, true)."</pre>");
         return $this->client->object()->addToSequence($requestParams);
     }
     
-    private function searchContact($email) {
-        $result = $this->getContactObj(array('email' => $email));
-        $contact = json_decode($result);
-        if(isset($contact)) {
-            return $contact->data->id;
-        } else {
-            $newContact = $this->addUser(array('email' => $email));
-            return $newContact->data->id;
-        }
-        
-    }
-    
     public function getTransactions($email) {
-        $contactID = $this->searchContact($email);
+        $contactID = $this->getCustomerID($email);
         $requestParams = array(
             "objectID" => ObjectType::PURCHASE,
             "condition"      => 'contact_id='.$contactID
@@ -258,7 +248,7 @@ echo("<pre>".print_r($requestParams, true)."</pre>");
     }
     
     public function logTransaction($email, $data) { 
-        $contactID = $this->searchContact($email);
+        $contactID = $this->getCustomerID($email);
     
         $requestParams2 = array(
       "contact_id"       => $contactID,
