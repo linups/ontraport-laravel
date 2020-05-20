@@ -289,4 +289,48 @@ echo("<pre>".print_r($requestParams, true)."</pre>");
         //return $this->client->object()->retrieveMultiplePaginated($requestParams);
         return $this->client->contact()->retrieveMultiple($requestParams);
     }
+    
+    public function getAffiliateList(array $filter = null) {
+
+/*      $std1 = new \stdClass();
+        $std1->value = 30;
+        
+        $std2 = new \stdClass();
+        $std2->value = 35;
+        
+        $std3 = new \stdClass();
+        $std3->value = 41;
+                
+        $array = [$std1, $std2, $std3];
+                
+        $filter = new \stdClass();
+        $filter->field = new \stdClass();
+        $filter->field->field = 'product_id';
+        $filter->op = 'IN';
+        $filter->value = new \stdClass();
+        $filter->value->list = $array;
+        
+        $filter = json_encode(array($filter));*/
+//        dd($filter);
+        
+        $requestParams = array(
+            "objectID"   => ObjectType::COMMISSION, // Object type ID: 0
+            "sort"       => "lastname",
+            "sortDir"    => "desc",
+//            "listFields" => "id,firstname,lastname,email,product_id,commission,date",
+        );
+        if(!is_null($filter)) $requestParams["condition"] = json_encode($filter);
+        
+        $response = $this->client->object()->retrieveMultiple($requestParams);
+        
+        return $response;
+        /*$response2 = json_decode($response);
+        
+        dd($response2->data[0], 
+                date('Y-m-d H:i:s', $response2->data[0]->date),
+                date('Y-m-d H:i:s', $response2->data[0]->date_processed),
+                date('Y-m-d H:i:s', $response2->data[0]->date_paid),
+                date('Y-m-d H:i:s', $response2->data[0]->dlm)
+                );*/
+    }
 }
