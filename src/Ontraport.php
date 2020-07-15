@@ -37,7 +37,7 @@ class Ontraport extends ABSontraport {
         
         return $return;
     }
-    
+    /** tested **/
     public function addUser($data) {
         $requestParams = array(
             "objectID"  => ObjectType::CONTACT, // Object type ID: 0
@@ -57,12 +57,12 @@ class Ontraport extends ABSontraport {
         }
         return $result;        
     }
-    
+    /** tested **/
     public function updateUser($email, $data) {
         $idArray = ['id' => $this->getCustomerID($email)];
         $requestParams = array_merge($idArray, $data);
 
-        return $this->client->contact()->update($requestParams);
+        return json_decode($this->client->contact()->update($requestParams));
     }
     
     private function trasactionType($type) {
@@ -75,116 +75,6 @@ class Ontraport extends ABSontraport {
         }
     }
     
-    public function chargeUser($data) {
-        $data = $this->prepareFields($data);
-        
-        $requestParams = array(
-            "contact_id"       => $this->getCustomerID($data['email']), // contact_id
-            "chargeNow"        => 'chargeNow',
-            "trans_date"       => time(),
-            "invoice_template" => 1,
-            "gateway_id"       => \config::getConfig()['payment']['gateway_id'], // payment gateway
-/*            "offer"            => array(
-                "products"          => array(
-                    array(
-                        "quantity"           => 1,
-                        "shipping"           => false,
-                        "tax"                => false,
-                        "price"              => array(
-                            array(
-                                "price"             => $data['price'],
-                                "payment_count"     => 1,
-                                "unit"              => "month",
-                                "id"                => 1 // The ID of the pricing item
-                                )
-                        ),
-                        // subscription => a recurring purchase item
-                        // one_time => a single purchase item
-                        // payment_plan => a product paid for on installment
-                        "type"                => $this->trasactionType($data['type']),
-                        "owner"               => 1,
-                        "offer_to_affiliates" => false,
-                        "trial_period_unit"   => "day",
-                        "trial_period_count"  => 0,
-                        "setup_fee_when"      => "immediately",
-                        "setup_fee_date"      => time(), 
-                        "delay_start"         => 0,
-                        "subscription_count"  => 0,
-                        "subscription_unit"   => "month",
-                        "taxable"             => false,
-                        "id"                  => $data['product_id'] // product id
-                        ),
-                    )
-                ),
-            "billing_address"     => array(
-                "address"     => $data['address'],
-                "city"        => $data['city'],
-                "state"       => $data['state'],
-                "zip"         => $data['zip'],
-                "country"     => $data['country']
-                ),
-            "payer"              => array(
-                "ccnumber"     => $data['ccNumber'],
-                "code"         => $data['payment_code'],
-                "expire_month" => $data['ccExpirationMonth'],
-                "expire_year"  => $data['ccExpirationYear']
-                )*/
-            );
-        //--- Charge array
-        (isset($data['contact_id'])) ? $requestParams['contact_id'] = $data['contact_id'] : $requestParams['contact_id'] = $this->getCustomerID($data['email']);
-        $requestParams['chargeNow'] = 'chargeNow';
-        $requestParams['trans_date'] = time();
-        $requestParams['invoice_template'] = 1;
-        (isset($data['gateway_id'])) ? $requestParams['gateway_id'] = $data['gateway_id'] : $requestParams['gateway_id'] =  \config::getConfig()['payment']['gateway_id'];
-        //--- Offer
-            //--- Products
-        $requestParams['offer']['products'][0]['quantity'] = 1;
-        $requestParams['offer']['products'][0]['shipping'] = false;
-        $requestParams['offer']['products'][0]['tax'] = false;
-                //--- Price
-        $requestParams['offer']['products'][0]['price'][0]['price'] = $data['price'];
-        (isset($data['payment_count'])) ? $requestParams['offer']['products'][0]['price'][0]['payment_count'] = $data['payment_count']  : $requestParams['offer']['products'][0]['price'][0]['payment_count'] = 1;
-        $requestParams['offer']['products'][0]['price'][0]['unit'] = 'month';
-        $requestParams['offer']['products'][0]['price'][0]['id'] = 1;
-        
-        $requestParams['offer']['products'][0]['type'] = $this->trasactionType($data['type']);
-        $requestParams['offer']['products'][0]['owner'] = 1;
-        $requestParams['offer']['products'][0]['offer_to_affiliates'] = false;
-        $requestParams['offer']['products'][0]['trial_period_unit'] = 'day';
-        $requestParams['offer']['products'][0]['trial_period_count'] = 0;
-        $requestParams['offer']['products'][0]['setup_fee_when'] = 'immediately';
-        $requestParams['offer']['products'][0]['setup_fee_date'] = time();
-        $requestParams['offer']['products'][0]['delay_start'] = 0;
-        $requestParams['offer']['products'][0]['subscription_count'] = 0;
-        $requestParams['offer']['products'][0]['subscription_unit'] = 'month';
-        $requestParams['offer']['products'][0]['taxable'] = false;
-        $requestParams['offer']['products'][0]['id'] = $data['product_id'];
-        //--- Billing Address
-        $requestParams['billing_address']['address'] = $data['address'];
-        $requestParams['billing_address']['city'] = $data['city'];
-        $requestParams['billing_address']['state'] = $data['state'];
-        $requestParams['billing_address']['zip'] = $data['zip'];
-        $requestParams['billing_address']['country'] = $data['country'];
-        // Payer
-        $requestParams['payer']['ccnumber'] = $data['ccNumber'];
-        $requestParams['payer']['code'] = $data['payment_code'];
-        $requestParams['payer']['expire_month'] = $data['ccExpirationMonth'];
-        $requestParams['payer']['expire_year'] = $data['ccExpirationYear'];
-          
-echo("<pre>".print_r($requestParams, true)."</pre>");        
-        $result = json_decode($this->client->transaction()->processManual($requestParams));
-        
-        if (isset($result->code) && $result->code == 0) {
-            $result->status = 'success';
-        } else {            
-            mail('linas@hardrokas.net', 'Ontraport API v2 error.', '<pre>'.print_r($result, true).'</pre>');
-            $result->status = 'fail';
-            $result->message = $result->chargeResult->message;
-        }
-        
-        return $result;
-    
-    }
     
     private function getCustomerID($email) { 
         $result = json_decode($this->getContactObj(array('email' => $email))); 
@@ -219,6 +109,24 @@ echo("<pre>".print_r($requestParams, true)."</pre>");
         if(is_array($tags)) $tags = implode(',',$tags);
         
         return $this->addTag($tags, $contactID);
+    }
+
+    public function removeTagsByEmail(string $email, array $tags):object {
+        $contactID = $this->getCustomerID($email);
+        if(is_array($tags)) $tags = implode(',',$tags);
+
+        $requestParams = array(
+            "objectID"     => ObjectType::CONTACT, // Object type ID: 0
+            "ids"          => $contactID,
+            "remove_list"  => $tags
+        );
+        $response = $this->client->object()->removeTag($requestParams);
+
+        if($response) {
+            return json_decode($response);
+        }
+
+        throw new \Exception('Faield to remove tag. Email:'.$email . ' Tags:'.$tags);
     }
     
     public function addSequenceByEmail($email, $seq_ids) {
@@ -333,4 +241,188 @@ echo("<pre>".print_r($requestParams, true)."</pre>");
                 date('Y-m-d H:i:s', $response2->data[0]->dlm)
                 );*/
     }
+    /** tested **/
+    public function getUserEmail(int $id):string {
+        $requestParams = array(
+            "id" => $id
+        );
+        $response = json_decode($this->client->contact()->retrieveSingle($requestParams));
+        
+        return $response->data->email;
+    }
+    /** tested **/
+    public function deleteUser($email) {
+        $requestParams = array(
+            "id" => $this->getCustomerID($email)
+        );
+        $response = $this->client->contact()->deleteSingle($requestParams);
+        
+        return json_decode($response);
+    }
+
+    public function retrieveUser(string $email):object {
+        $requestParams = array(
+            "id" => $this->getCustomerID($email)
+        );
+        $response = $this->client->contact()->retrieveSingle($requestParams);
+
+        return json_decode($response);
+    }
+
+    public function chargeUser($data) {
+        $data = $this->prepareFields($data);
+
+        //--- Charge array
+        $requestParams['contact_id'] = $data['contact_id'] ?? $this->getCustomerID($data['email']);
+        $requestParams['chargeNow'] = 'chargeNow';
+        $requestParams['trans_date'] = time() * 1000;
+        $requestParams['invoice_template'] = 1;
+        $requestParams['gateway_id'] = $data['payment_gateway'] ?? 6;
+
+        //--- Offer
+        //--- Products
+        $requestParams['offer']['products'][0]['quantity'] = 1;
+        $requestParams['offer']['products'][0]['shipping'] = false;
+        $requestParams['offer']['products'][0]['tax'] = false;
+        //--- Price
+        $requestParams['offer']['products'][0]['price'][0]['price'] = $data['price'];
+        $requestParams['offer']['products'][0]['price'][0]['payment_count'] = $data['payment_count']  ?? 1;
+        $requestParams['offer']['products'][0]['price'][0]['unit'] = 'month';
+        $requestParams['offer']['products'][0]['price'][0]['id'] = $data['product_id'];
+        //--- Subscription
+        if(isset($data['trial'])) {
+            $requestParams['offer']['products'][0]['trial']['price'] = $data['trial']['price'];
+            $requestParams['offer']['products'][0]['trial']['payment_count'] = $data['trial']['payment_count'];
+            $requestParams['offer']['products'][0]['trial']['unit'] = $data['trial']['unit'];
+        }
+
+        $requestParams['offer']['products'][0]['type'] = $this->trasactionType($data['type']);
+        $requestParams['offer']['products'][0]['owner'] = 1;
+        $requestParams['offer']['products'][0]['offer_to_affiliates'] = false;
+        $requestParams['offer']['products'][0]['trial_period_unit'] = 'month';
+        $requestParams['offer']['products'][0]['trial_period_count'] = 6;
+        $requestParams['offer']['products'][0]['trial_price'] = 0;
+
+        $requestParams['offer']['products'][0]['delay_start'] = 0;
+        $requestParams['offer']['products'][0]['subscription_count'] = 999;
+        $requestParams['offer']['products'][0]['subscription_unit'] = 'month';
+        $requestParams['offer']['products'][0]['taxable'] = false;
+        $requestParams['offer']['products'][0]['id'] = $data['product_id'];
+//        dd($requestParams);
+        $result = json_decode($this->client->transaction()->processManual($requestParams));
+
+        if (isset($result->code) && $result->code == 0) {
+            $result->status = 'success';
+        } else {
+            mail('linas@hardrokas.net', 'Ontraport API v2 error.', '<pre>'.print_r($result, true).'</pre>');
+            $result->status = 'fail';
+            $result->message = $result->chargeResult->message;
+        }
+
+        return $result;
+
+    }
 }
+
+
+/***
+ *
+ *  $requestParams = array(
+"contact_id"       => 40018,
+"chargeNow"        => "chargeNow",
+"trans_date"       => time()*1000,
+"invoice_template" => 1,
+"gateway_id"       => 7,
+//            "cc_id"            => 1,
+"offer"            => array(
+"products"          => array(
+array(
+"quantity"           => 1,
+"shipping"           => false,
+"tax"                => false,
+"price"              => array(
+array(
+"price"             => 149,
+"payment_count"     => 0,
+"unit"              => "month",
+"id"                => 40
+)
+),
+'trial' => array(
+'price' => 0,
+'payment_count' => 6,
+'unit' => 'month',
+),
+"type"                => "subscription",
+"owner"               => 1,
+"offer_to_affiliates" => false,
+"trial_period_unit"   => "month",
+"trial_period_count"  => 6,
+//                        "setup_fee_when"      => "immediately",
+//                        "setup_fee_date"      => "string",
+"delay_start"         => 0,
+"subscription_count"  => 999,
+"subscription_unit"   => "month",
+"taxable"             => false,
+"id"                  => 40
+)
+)
+)
+);
+ *
+ * FROM ONTRAPORT SUPPORT
+ *
+ * {
+"contact_id": "165390",
+"chargeNow": "chargeNow",
+"trans_date": 1592945788,
+"invoice_template": 1,
+"gateway_id": 1,
+"offer": {
+"products": [
+{
+"quantity": 1,
+"total": 149,
+"shipping": false,
+"tax": false,
+"price": [
+{
+"price": 149,
+"payment_count": 1,
+"unit": "month",
+"id": 40
+}
+],
+"trial": {
+"price":0,
+"payment_count":6,
+"unit":"month"
+},
+"type": "subscription",
+"owner": 1,
+"level1": 0,
+"level2": 0,
+"offer_to_affiliates": false,
+"trial_period_unit": "month",
+"trial_period_count": 6,
+"trial_price": 0,
+"setup_fee": 0,
+"delay_start": 0,
+"subscription_fee": 0,
+"subscription_count": 0,
+"subscription_unit": "month",
+"taxable": true,
+"id": 1
+}
+],
+"delay": 0,
+"subTotal": 149,
+"grandTotal": 149,
+"hasTaxes": false,
+"hasShipping": false,
+"shipping_charge_reoccurring_orders": false,
+"send_recurring_invoice": false
+}
+}
+
+ */
