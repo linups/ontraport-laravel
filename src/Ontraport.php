@@ -103,14 +103,14 @@ class Ontraport extends ABSontraport {
         );
         return $this->client->object()->addTag($requestParams);
     }
-    
+    /*** tested ***/
     public function addTagByEmail($email, $tags) {
         $contactID = $this->getCustomerID($email);
         if(is_array($tags)) $tags = implode(',',$tags);
         
         return $this->addTag($tags, $contactID);
     }
-
+    /*** tested ***/
     public function removeTagsByEmail(string $email, array $tags):object {
         $contactID = $this->getCustomerID($email);
         if(is_array($tags)) $tags = implode(',',$tags);
