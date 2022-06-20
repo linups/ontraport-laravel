@@ -46,7 +46,10 @@ class Ontraport extends ABSontraport {
         $requestParamsMerged = array_merge($requestParams, $this->prepareFields($data));
         $result = json_decode($this->client->object()->saveOrUpdate($requestParamsMerged));
         
-        if (!isset($result) || (isset($result) && $result->code != 0)) {
+        if (!isset($result)) {
+            $result = new \stdClass();
+            $result->status = 'fail';
+        } elseif(isset($result) && $result->code != 0) {
             mail('linas@hardrokas.net', 'Ontraport API v2 error.', '<pre>AddUser:data'.print_r($data, true).
                     '| RequestParams:'.print_r($requestParams, true).
                     '| Merged Params:'.print_r($requestParamsMerged, true).
@@ -82,7 +85,9 @@ class Ontraport extends ABSontraport {
             return $result->data->id;
         } else {
             $newContact = $this->addUser(array('email' => $email));
-            return $newContact->data->id;
+            if(isset($newContact->data->id)) return $newContact->data->id;
+
+            throw new \Exception('addUser: <pre>'.print_r($newContact, true).'</pre>');
         }
     }
     
