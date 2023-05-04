@@ -44,28 +44,37 @@ class Ontraport extends ABSontraport {
             "email"     => str_replace(' ', '', $data['email']) // The unique field for the contact object
         );
         $requestParamsMerged = array_merge($requestParams, $this->prepareFields($data));
+
         $result = json_decode($this->client->object()->saveOrUpdate($requestParamsMerged));
-        
-        if (!isset($result)) {
-            $result = new \stdClass();
-            $result->status = 'fail';
-        } elseif(isset($result) && $result->code != 0) {
-            mail('linas@hardrokas.net', 'Ontraport API v2 error.', '<pre>AddUser:data'.print_r($data, true).
-                    '| RequestParams:'.print_r($requestParams, true).
-                    '| Merged Params:'.print_r($requestParamsMerged, true).
-                    '| Result from server:' .print_r($result, true).'</pre>');
-            $result->status = 'fail';
-        } else {
-            $result->status = 'success';
-        }
-        return $result;        
+
+        if(isset($result->code) && $result->code == 0) return $result;
+
+            throw new \Exception('<pre>' . print_r([
+                    'name' => 'addUser',
+                    'postData' => $data,
+                    'resultData' => $result,
+                    'requestParams' => $requestParams,
+                    'mergedParams' => $requestParamsMerged,
+                ], true) . '</pre>');
+
     }
     /** tested **/
     public function updateUser($email, $data) {
         $idArray = ['id' => $this->getCustomerID($email)];
         $requestParams = array_merge($idArray, $data);
 
-        return json_decode($this->client->contact()->update($requestParams));
+        $response = json_decode($this->client->contact()->update($requestParams));
+
+        if($response->code == 0) return $response;
+
+        throw new \Exception('<pre>'.print_r([
+                'name' => 'updateUser',
+                'email' => $email,
+                'postData' => $data,
+                'resultData' => $response,
+                'idArray' => $idArray,
+                'requestParams' => $requestParams,
+            ], true).'</pre>');
     }
     
     private function trasactionType($type) {
@@ -81,14 +90,20 @@ class Ontraport extends ABSontraport {
     
     private function getCustomerID($email) { 
         $result = json_decode($this->getContactObj(array('email' => $email))); 
-        if (isset($result->code) && $result->code == 0) {
-            return $result->data->id;
-        } else {
-            $newContact = $this->addUser(array('email' => $email));
-            if(isset($newContact->data->id)) return $newContact->data->id;
 
-            throw new \Exception('addUser: <pre>'.print_r($newContact, true).'</pre>');
+        if (isset($result->code) && $result->code == 0) {
+            $response = $result;
+        } else {
+            $response = $this->addUser(array('email' => $email));
         }
+
+        if(isset($response->data->id)) return $response->data->id;
+
+        throw new \Exception('<pre>'.print_r([
+                'name' => 'getCustomerID',
+                'email' => $email,
+                'result' => $result,
+            ], true).'</pre>');
     }
     
     private function getContactObj($array) { 
@@ -112,8 +127,17 @@ class Ontraport extends ABSontraport {
     public function addTagByEmail($email, $tags) {
         $contactID = $this->getCustomerID($email);
         if(is_array($tags)) $tags = implode(',',$tags);
-        
-        return $this->addTag($tags, $contactID);
+
+        $response = json_decode($this->addTag($tags, $contactID));
+
+        if(isset($response->code) && $response->code == 0) return $response;
+
+        throw new \Exception('<pre>'.print_r([
+                'name' => 'addTagByEmail',
+                'email' => $email,
+                'tags' => $tags,
+                'response' => $response,
+            ], true).'</pre>');
     }
     /*** tested ***/
     public function removeTagsByEmail(string $email, array $tags):object {
@@ -131,7 +155,13 @@ class Ontraport extends ABSontraport {
             return json_decode($response);
         }
 
-        throw new \Exception('Faield to remove tag. Email:'.$email . ' Tags:'.$tags);
+        throw new \Exception('<pre>'.print_r([
+                'name' => 'removeTagsByEmail',
+                'email' => $email,
+                'tags' => $tags,
+                'response' => $response,
+                'requestParams' => $requestParams,
+            ], true).'</pre>');
     }
     
     public function addSequenceByEmail($email, $seq_ids) {
@@ -237,14 +267,6 @@ class Ontraport extends ABSontraport {
         $response = $this->client->object()->retrieveMultiple($requestParams);
         
         return $response;
-        /*$response2 = json_decode($response);
-        
-        dd($response2->data[0], 
-                date('Y-m-d H:i:s', $response2->data[0]->date),
-                date('Y-m-d H:i:s', $response2->data[0]->date_processed),
-                date('Y-m-d H:i:s', $response2->data[0]->date_paid),
-                date('Y-m-d H:i:s', $response2->data[0]->dlm)
-                );*/
     }
     /** tested **/
     public function getUserEmail(int $id):string {
@@ -252,17 +274,31 @@ class Ontraport extends ABSontraport {
             "id" => $id
         );
         $response = json_decode($this->client->contact()->retrieveSingle($requestParams));
-        
-        return $response->data->email;
+
+        if(isset($response->data->email)) return $response->data->email;
+
+        throw new \Exception('<pre>'.print_r([
+                'name' => 'getUserEmail',
+                'id' => $id,
+                'response' => $response,
+                'requestParams' => $requestParams,
+            ], true).'</pre>');
     }
     /** tested **/
     public function deleteUser($email) {
         $requestParams = array(
             "id" => $this->getCustomerID($email)
         );
-        $response = $this->client->contact()->deleteSingle($requestParams);
-        
-        return json_decode($response);
+        $response = json_decode($this->client->contact()->deleteSingle($requestParams));
+
+        if(isset($response->code)) return $response;
+
+        throw new \Exception('<pre>'.print_r([
+                'name' => 'deleteUser',
+                'email' => $email,
+                'response' => $response,
+                'requestParams' => $requestParams,
+            ], true).'</pre>');
     }
 
     public function retrieveUser(string $email):object {
