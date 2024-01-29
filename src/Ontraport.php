@@ -44,15 +44,16 @@ class Ontraport extends ABSontraport {
             "email"     => str_replace(' ', '', $data['email']) // The unique field for the contact object
         );
         $requestParamsMerged = array_merge($requestParams, $this->prepareFields($data));
-
-        $result = json_decode($this->client->object()->saveOrUpdate($requestParamsMerged));
+        $rawResponse = $this->client->object()->saveOrUpdate($requestParamsMerged);
+        $result = json_decode($rawResponse);
 
         if(isset($result->code) && $result->code == 0) return $result;
 
             throw new \Exception('<pre>' . print_r([
                     'name' => 'addUser',
                     'postData' => $data,
-                    'resultData' => $result,
+                    'rawResponse' => $rawResponse,
+                    'response' => $result,
                     'requestParams' => $requestParams,
                     'mergedParams' => $requestParamsMerged,
                 ], true) . '</pre>');
@@ -62,16 +63,17 @@ class Ontraport extends ABSontraport {
     public function updateUser($email, $data) {
         $idArray = ['id' => $this->getCustomerID($email)];
         $requestParams = array_merge($idArray, $data);
+        $rawResponse = $this->client->contact()->update($requestParams);
+        $response = json_decode($rawResponse);
 
-        $response = json_decode($this->client->contact()->update($requestParams));
-
-        if($response->code == 0) return $response;
+        if(isset($response->code) && $response->code == 0) return $response;
 
         throw new \Exception('<pre>'.print_r([
                 'name' => 'updateUser',
                 'email' => $email,
                 'postData' => $data,
-                'resultData' => $response,
+                'rawResponse' => $rawResponse,
+                'response' => $response,
                 'idArray' => $idArray,
                 'requestParams' => $requestParams,
             ], true).'</pre>');
@@ -103,6 +105,7 @@ class Ontraport extends ABSontraport {
                 'name' => 'getCustomerID',
                 'email' => $email,
                 'result' => $result,
+                'response' => $response,
             ], true).'</pre>');
     }
     
@@ -127,8 +130,8 @@ class Ontraport extends ABSontraport {
     public function addTagByEmail($email, $tags) {
         $contactID = $this->getCustomerID($email);
         if(is_array($tags)) $tags = implode(',',$tags);
-
-        $response = json_decode($this->addTag($tags, $contactID));
+        $rawResponse = $this->addTag($tags, $contactID);
+        $response = json_decode($rawResponse);
 
         if(isset($response->code) && $response->code == 0) return $response;
 
@@ -137,6 +140,7 @@ class Ontraport extends ABSontraport {
                 'email' => $email,
                 'tags' => $tags,
                 'response' => $response,
+                'rawResponse' => $rawResponse,
             ], true).'</pre>');
     }
     /*** tested ***/
@@ -273,7 +277,8 @@ class Ontraport extends ABSontraport {
         $requestParams = array(
             "id" => $id
         );
-        $response = json_decode($this->client->contact()->retrieveSingle($requestParams));
+        $rawResponse = $this->client->contact()->retrieveSingle($requestParams);
+        $response = json_decode($rawResponse);
 
         if(isset($response->data->email)) return $response->data->email;
 
@@ -281,6 +286,7 @@ class Ontraport extends ABSontraport {
                 'name' => 'getUserEmail',
                 'id' => $id,
                 'response' => $response,
+                'rawResponse' => $rawResponse,
                 'requestParams' => $requestParams,
             ], true).'</pre>');
     }
@@ -289,7 +295,8 @@ class Ontraport extends ABSontraport {
         $requestParams = array(
             "id" => $this->getCustomerID($email)
         );
-        $response = json_decode($this->client->contact()->deleteSingle($requestParams));
+        $rawResponse = $this->client->contact()->deleteSingle($requestParams);
+        $response = json_decode($rawResponse);
 
         if(isset($response->code)) return $response;
 
@@ -297,6 +304,7 @@ class Ontraport extends ABSontraport {
                 'name' => 'deleteUser',
                 'email' => $email,
                 'response' => $response,
+                'rawResponse' => $rawResponse,
                 'requestParams' => $requestParams,
             ], true).'</pre>');
     }
