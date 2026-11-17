@@ -384,7 +384,7 @@ class BackwardCompatibilityTest extends TestCase
 
     // ---------------------------------------------------------------- transactions
 
-    public function test_log_transaction_sends_the_raw_json_offer(): void
+    public function test_log_transaction_sends_the_json_offer(): void
     {
         [$ontraport, $http] = $this->ontraport();
         $http->queue(self::ok(['id' => 12]), '{"code":0,"data":{"invoice_id":1}}');

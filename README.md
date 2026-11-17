@@ -117,10 +117,10 @@ The message keeps its `<pre>print_r(...)</pre>` format. Card numbers, expiry dat
 codes are redacted. `getContext()` returns the same details as an array, and `getMethodName()`
 returns the name of the method that failed.
 
-## Bundled SDK
+## Ontraport SDK
 
-The package ships a patched copy of the official `ontraport/sdk-php` in `lib/ontraport-sdk`.
-See [`lib/ontraport-sdk/PATCHES.md`](lib/ontraport-sdk/PATCHES.md) for the changes.
+The package uses the official [`ontraport/sdk-php`](https://github.com/Ontraport/SDK-PHP) (`^1.3`),
+installed by Composer. Its `OntraportAPI\` classes are available to your app as well.
 
 ## Testing
 

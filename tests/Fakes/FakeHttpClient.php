@@ -28,7 +28,7 @@ class FakeHttpClient extends CurlClient
         return $this;
     }
 
-    public function httpRequest($requestParams, $url, $method, $requiredParams, $options, $raw = false)
+    public function httpRequest($requestParams, $url, $method, $requiredParams, $options)
     {
         // Mirror CurlClient's own required-parameter validation.
         foreach ((array) $requiredParams as $param) {
@@ -40,9 +40,7 @@ class FakeHttpClient extends CurlClient
 
         $contentType = $options['headers']['Content-Type'] ?? null;
 
-        if (isset($raw) && $raw != '') {
-            $body = json_encode($raw);
-        } elseif ($contentType === 'application/json') {
+        if ($contentType === 'application/json') {
             $body = json_encode($requestParams);
         } else {
             $body = is_array($requestParams) ? http_build_query($requestParams) : $requestParams;
@@ -54,7 +52,6 @@ class FakeHttpClient extends CurlClient
             'params' => $requestParams,
             'required' => $requiredParams,
             'contentType' => $contentType,
-            'raw' => $raw,
             'body' => $body,
         ];
 

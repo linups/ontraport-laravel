@@ -7,11 +7,8 @@ use Illuminate\Support\Facades\Log;
 use Linups\OntraportLaravel\Events\ChargeFailed;
 use Linups\OntraportLaravel\Exceptions\OntraportException;
 use Linups\OntraportLaravel\Support\Redactor;
-use Linups\OntraportLaravel\Support\SdkAutoloader;
 use OntraportAPI\ObjectType;
 use OntraportAPI\Ontraport as APIontraport;
-
-SdkAutoloader::register();
 
 /**
  * Ontraport API client for Laravel.
@@ -338,8 +335,7 @@ class Ontraport extends ABSontraport
             ],
         ];
 
-        // The second argument uses the bundled SDK's raw-body patch (lib/ontraport-sdk/PATCHES.md).
-        return $this->client->transaction()->processManual($payload, $payload);
+        return $this->client->transaction()->processManual($payload);
     }
 
     /**

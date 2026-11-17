@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.2.0
+
+Backward compatible. Public method names, parameters and return shapes are unchanged.
+
+### Changed
+- The Ontraport SDK is now the Composer dependency `ontraport/sdk-php` `^1.3` instead of a
+  bundled, patched copy of v1.0.3. `lib/ontraport-sdk/` and `Support\SdkAutoloader` were removed.
+  If your app also requires `ontraport/sdk-php`, Composer now resolves a single shared version.
+- `logTransaction()` sends the same JSON body as before. The bundled raw-body patch was
+  redundant because `processManual()` already JSON-encodes its parameters.
+
+### Known issues
+- Upstream `ontraport/sdk-php` 1.3.0 still triggers PHP 8.4/8.5 deprecation notices
+  (implicitly nullable parameter, `curl_close()`). They are not errors, and Laravel sends them to the
+  `deprecations` log channel.
+- Upstream does not guard a missing `x-rate-limit-reset` header on HTTP 429 responses.
+
 ## v1.1.0
 
 Backward compatible. Public method names, parameters and return shapes are unchanged.
