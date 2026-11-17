@@ -160,9 +160,7 @@ class CurlClient
      * @return string|boolean
      */
     public function httpRequest($requestParams, $url, $method, $requiredParams, $options, $raw = false)
-    { //$url = 'http://www.thewatkinsmethod.com/brittanywatkins.com/API/test/post_listener.php';
-    //$url = "http://requestbin.fullcontact.com/1beonl51";
-//die(var_Dump($raw));        
+    {
         if (!$this->_validateRequest($requestParams, $requiredParams, $method))
         {
             return false;
@@ -256,10 +254,14 @@ class CurlClient
         $this->_lastStatusCode = curl_getinfo($curlHandle, CURLINFO_HTTP_CODE);
         if ($this->_lastStatusCode == CurlClient::HTTP_RATE_LIMIT)
         {
-            $result = $this->retry($headers[self::RATE_LIMIT_RESET], $curlHandle);
+            $result = $this->retry(isset($headers[self::RATE_LIMIT_RESET]) ? (int) $headers[self::RATE_LIMIT_RESET] : 1, $curlHandle);
         }
-//die(var_Dump(curl_error($curlHandle)));
-        curl_close($curlHandle);
+
+        // curl_close() is a no-op since PHP 8.0 and deprecated since PHP 8.5.
+        if (PHP_VERSION_ID < 80000)
+        {
+            curl_close($curlHandle);
+        }
 
         unset($this->_requestHeaders["Content-Type"]);
         return $result;
@@ -295,7 +297,7 @@ class CurlClient
      */
     public function retry($wait, $curlHandle)
     {
-        sleep($wait);
+        sleep(max(1, (int) $wait));
         $result = curl_exec($curlHandle);
         $this->_lastStatusCode = curl_getinfo($curlHandle, CURLINFO_HTTP_CODE);
         return $result;

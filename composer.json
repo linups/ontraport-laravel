@@ -1,20 +1,37 @@
 {
     "name": "linups/ontraport-laravel",
-    "description": "Laravel to Ontraport integration. Testing only",
+    "description": "Laravel integration for the Ontraport API: contacts, tags, sequences and transactions.",
     "type": "library",
     "license": "MIT",
+    "keywords": ["laravel", "ontraport", "crm"],
     "authors": [
         {
             "name": "Linas",
             "email": "linas@hardrokas.net"
         }
     ],
-    "minimum-stability": "dev",
-    "require": {},
+    "require": {
+        "php": "^8.2",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "illuminate/support": "^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "laravel/framework": "^11.0|^12.0|^13.0",
+        "phpunit/phpunit": "^10.5|^11.0|^12.0"
+    },
     "autoload": {
         "psr-4": {
             "Linups\\OntraportLaravel\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Linups\\OntraportLaravel\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
     },
     "extra": {
         "laravel": {
@@ -22,6 +39,8 @@
                 "Linups\\OntraportLaravel\\OntraportServiceProvider"
             ]
         }
+    },
+    "config": {
+        "sort-packages": true
     }
 }
-
