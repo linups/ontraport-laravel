@@ -3,8 +3,8 @@
 Laravel integration for the [Ontraport](https://ontraport.com) API: create and update contacts,
 manage tags and sequences, and log or charge transactions.
 
-- PHP 8.2+
-- Laravel 11, 12 or 13
+- PHP 8.1+
+- Laravel 10, 11, 12 or 13
 
 ## Installation
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.2
+
+No code changes.
+
+### Changed
+- Supports Laravel 10 and PHP 8.1 again: `composer.json` now declares `php ^8.1` and
+  `illuminate/support ^10|^11|^12|^13`. Before, Laravel 10 projects silently stayed on v1.0.8.
+
 ## v1.2.1
 
 Public method names, parameters and return shapes are unchanged.
