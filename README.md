@@ -49,6 +49,9 @@ public function store(Request $request, Ontraport $ontraport)
 > up first and **creates it if it does not exist**. This includes `deleteUser()`,
 > `retrieveUser()` and `getTransactions()`.
 
+> **Empty values are skipped.** `addUser()` and `updateUser()` do not send fields whose value is
+> `''` or `null`, so blank form input never overwrites data already stored in Ontraport.
+
 ### Methods
 
 | Method | Returns |

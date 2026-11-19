@@ -214,6 +214,42 @@ class ImprovementsTest extends TestCase
         $this->assertSame(12, $params['offer']['products'][0]['subscription_count']);
     }
 
+    // ---------------------------------------------------------------- empty fields (v1.2.1)
+
+    public function test_add_user_does_not_send_empty_fields(): void
+    {
+        [$ontraport, $http] = $this->ontraport();
+        $http->queue(self::ok(['id' => 55]));
+
+        $ontraport->addUser([
+            'email' => 'a@b.c',
+            'firstname' => '',
+            'lastname' => null,
+            'billing_city' => '',
+            'zero_int' => 0,
+            'zero_string' => '0',
+            'flag' => false,
+        ]);
+
+        $this->assertSame([
+            'objectID' => \OntraportAPI\ObjectType::CONTACT,
+            'email' => 'a@b.c',
+            'zero_int' => 0,
+            'zero_string' => '0',
+            'flag' => false,
+        ], $http->last()['params']);
+    }
+
+    public function test_update_user_does_not_send_empty_fields(): void
+    {
+        [$ontraport, $http] = $this->ontraport();
+        $http->queue(self::ok(['id' => 77]), self::ok(['id' => 77]));
+
+        $ontraport->updateUser('a@b.c', ['firstname' => '', 'lastname' => 'Doe', 'cell_phone' => null]);
+
+        $this->assertSame(['id' => 77, 'lastname' => 'Doe'], $http->last()['params']);
+    }
+
     // ---------------------------------------------------------------- bundled SDK
 
     public function test_sdk_exception_classes_are_autoloadable(): void

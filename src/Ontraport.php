@@ -16,6 +16,9 @@ use OntraportAPI\Ontraport as APIontraport;
  * Methods that take an e-mail look the contact up by e-mail and create it
  * if it does not exist yet (this includes deleteUser(), retrieveUser() and getTransactions()).
  *
+ * addUser() and updateUser() skip fields whose value is '' or null, so blank form input never
+ * overwrites data already stored in Ontraport.
+ *
  * Backward compatibility: public method signatures and return shapes are part of the
  * package's contract. Some methods return the raw JSON string from Ontraport, others a decoded
  * object; see each method's @return. Do not add native parameter/return types to existing
@@ -53,6 +56,7 @@ class Ontraport extends ABSontraport
      *
      * @param array<string, mixed> $data Contact fields. Checkout-style keys (billing_address1,
      *                                   billing_city, payment_number, ...) are also mapped to Ontraport fields.
+     *                                   Fields whose value is '' or null are not sent, so existing values are kept.
      * @return object Decoded Ontraport response.
      * @throws OntraportException
      */
@@ -62,7 +66,7 @@ class Ontraport extends ABSontraport
             'objectID' => ObjectType::CONTACT,
             'email' => $this->normalizeEmail($data['email']),
         ];
-        $requestParamsMerged = array_merge($requestParams, $this->prepareFields($data));
+        $requestParamsMerged = array_merge($requestParams, $this->withoutEmptyValues($this->prepareFields($data)));
         $rawResponse = $this->client->object()->saveOrUpdate($requestParamsMerged);
         $result = json_decode($rawResponse);
 
@@ -83,14 +87,14 @@ class Ontraport extends ABSontraport
      * Update a contact's fields. Creates the contact first if the e-mail is unknown.
      *
      * @param string               $email
-     * @param array<string, mixed> $data
+     * @param array<string, mixed> $data Fields whose value is '' or null are not sent, so existing values are kept.
      * @return object Decoded Ontraport response.
      * @throws OntraportException
      */
     public function updateUser($email, $data)
     {
         $idArray = ['id' => $this->getCustomerID($email)];
-        $requestParams = array_merge($idArray, $data);
+        $requestParams = array_merge($idArray, $this->withoutEmptyValues($data));
         $rawResponse = $this->client->contact()->update($requestParams);
         $response = json_decode($rawResponse);
 
@@ -459,6 +463,15 @@ class Ontraport extends ABSontraport
         }
 
         return $return;
+    }
+
+    /**
+     * Drops '' and null values so blank input never overwrites existing Ontraport data.
+     * 0, '0' and false are kept.
+     */
+    private function withoutEmptyValues(array $data): array
+    {
+        return array_filter($data, static fn ($value) => $value !== '' && $value !== null);
     }
 
     private function transactionType($type): ?string

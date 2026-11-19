@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.1
+
+Public method names, parameters and return shapes are unchanged.
+
+### Fixed
+- `addUser()` and `updateUser()` no longer send fields whose value is `''` or `null`. Before,
+  passing e.g. `'firstname' => ''` cleared the contact's existing first name in Ontraport.
+  `0`, `'0'` and `false` are still sent.
+
+### Upgrade note
+- Passing `''` or `null` to `addUser()`/`updateUser()` no longer clears a contact field.
+
 ## v1.2.0
 
 Backward compatible. Public method names, parameters and return shapes are unchanged.
