@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.3.0
+
+Backward compatible.
+
+### Added
+- `getUserList($limit = 50, $offset = 0, $since = null)` pages through contacts (sorted by ID) and
+  returns the decoded contact objects. `$since` is a unix timestamp in seconds; when given, only
+  contacts created after it are returned. Throws `OntraportException` on an error response.
+  This restores a method that was used by apps but had never been committed to the package.
+
 ## v1.2.2
 
 No code changes.

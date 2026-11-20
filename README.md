@@ -62,6 +62,7 @@ public function store(Request $request, Ontraport $ontraport)
 | `getUserEmail(int $id)` | string |
 | `deleteUser($email)` | object |
 | `getContactList(array $params)` | raw JSON string |
+| `getUserList($limit = 50, $offset = 0, ?int $since = null)` | array of contact objects, oldest first; `$since` (unix seconds) keeps only contacts created after it |
 | `addTag($tagIds, $contactIds)` | raw JSON string |
 | `addTagByEmail($email, array\|string $tags)` | object |
 | `removeTagsByEmail(string $email, array $tags)` | object (API errors are returned, not thrown) |

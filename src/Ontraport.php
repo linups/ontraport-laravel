@@ -178,6 +178,47 @@ class Ontraport extends ABSontraport
         return $this->client->contact()->retrieveMultiple($requestParams);
     }
 
+    /**
+     * Page through contacts, oldest first (sorted by ID so offset paging stays stable).
+     *
+     * @param int      $limit  Page size (Ontraport returns at most 50).
+     * @param int      $offset Start offset.
+     * @param int|null $since  Unix timestamp in seconds; only contacts created after it are returned.
+     * @return array<int, object> Contact objects; [] when there are none.
+     * @throws OntraportException When Ontraport returns an error or an unreadable response.
+     */
+    public function getUserList($limit = 50, $offset = 0, $since = null)
+    {
+        $requestParams = [
+            'start' => (int) $offset,
+            'range' => (int) $limit,
+            'sort' => 'id',
+            'sortDir' => 'asc',
+        ];
+        if (! is_null($since)) {
+            $requestParams['condition'] = json_encode([[
+                'field' => ['field' => 'date'],
+                'op' => '>',
+                'value' => ['value' => (int) $since],
+            ]]);
+        }
+        $rawResponse = $this->client->contact()->retrieveMultiple($requestParams);
+        $response = json_decode($rawResponse);
+
+        if ($this->isOk($response)) {
+            return is_array($response->data ?? null) ? $response->data : [];
+        }
+
+        $this->fail('getUserList', [
+            'limit' => $limit,
+            'offset' => $offset,
+            'since' => $since,
+            'response' => $response,
+            'rawResponse' => $rawResponse,
+            'requestParams' => $requestParams,
+        ]);
+    }
+
     // ------------------------------------------------------------------ tags & sequences
 
     /**

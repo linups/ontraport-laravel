@@ -250,6 +250,63 @@ class ImprovementsTest extends TestCase
         $this->assertSame(['id' => 77, 'lastname' => 'Doe'], $http->last()['params']);
     }
 
+    // ---------------------------------------------------------------- getUserList
+
+    public function test_get_user_list_pages_contacts_without_since(): void
+    {
+        [$ontraport, $http] = $this->ontraport();
+        $http->queue(json_encode(['code' => 0, 'data' => [
+            ['id' => 1, 'email' => 'a@b.c', 'cell_phone' => '+1555'],
+            ['id' => 2, 'email' => 'd@e.f'],
+        ]]));
+
+        $users = $ontraport->getUserList(50, 100);
+
+        $this->assertCount(2, $users);
+        $this->assertSame('a@b.c', $users[0]->email);
+        $this->assertSame('+1555', $users[0]->cell_phone);
+        $this->assertSame('get', $http->last()['method']);
+        $this->assertSame('https://api.ontraport.com/1/Contacts', $http->last()['url']);
+        $this->assertSame(
+            ['start' => 100, 'range' => 50, 'sort' => 'id', 'sortDir' => 'asc'],
+            $http->last()['params'],
+        );
+    }
+
+    public function test_get_user_list_filters_on_creation_date_when_since_is_given(): void
+    {
+        [$ontraport, $http] = $this->ontraport();
+        $http->queue('{"code":0,"data":[]}');
+
+        $this->assertSame([], $ontraport->getUserList(50, 0, 1700000000));
+        $this->assertSame(
+            json_encode([['field' => ['field' => 'date'], 'op' => '>', 'value' => ['value' => 1700000000]]]),
+            $http->last()['params']['condition'],
+        );
+    }
+
+    public function test_get_user_list_throws_on_error_response(): void
+    {
+        [$ontraport, $http] = $this->ontraport();
+        $http->queue(json_encode(['code' => 1, 'message' => 'Invalid']));
+
+        $this->expectException(OntraportException::class);
+        $this->expectExceptionMessage('[name] => getUserList');
+
+        $ontraport->getUserList(50, 0);
+    }
+
+    public function test_get_user_list_throws_on_unreadable_response(): void
+    {
+        [$ontraport, $http] = $this->ontraport();
+        $http->queue('not json');
+
+        $this->expectException(OntraportException::class);
+        $this->expectExceptionMessage('[name] => getUserList');
+
+        $ontraport->getUserList();
+    }
+
     // ---------------------------------------------------------------- bundled SDK
 
     public function test_sdk_exception_classes_are_autoloadable(): void
